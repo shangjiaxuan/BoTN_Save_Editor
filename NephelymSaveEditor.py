@@ -3710,10 +3710,26 @@ class PlayerObtainedVariants(GenericParsers):
         self.playerobtainedvariant_list = []
         while len(playerobtainedvariants_data) > 0:
             variant_values, playerobtainedvariants_data = self.split_byte_list(playerobtainedvariants_data)
+            print(variant_values)
             if len(variant_values) != 2:
                 raise
             self.playerobtainedvariant_list.append(Variant(variant_values))
-    
+    def add_item(self, race, sex):
+        self.playerobtainedvariant_list.append(Variant(self.RACES[race], self.SEXES[sex]))
+        return
+    def add_all(self):
+        self.playerobtainedvariant_list.clear()
+        for race in self.RACES:
+            if race in self.RACES_NPC_FEMALE or race in self.RACES_NPC_FUTA or race in self.RACES_OTHERS:
+                continue
+            if race in self.RACES_FEMALE:
+                self.playerobtainedvariant_list.append(Variant(self.RACES[race], self.SEXES['female']))
+            if race in self.RACES_FUTA:
+                self.playerobtainedvariant_list.append(Variant(self.RACES[race], self.SEXES['futa']))
+            if race in self.RACES_MALE:
+                self.playerobtainedvariant_list.append(Variant(self.RACES[race], self.SEXES['male']))
+        return
+
     def get_data(self):
         return self.playerobtainedvariant_list
 
@@ -4068,7 +4084,7 @@ if __name__ == "__main__":
     
     # DEBUGGING: test if parsing and save of save works.
     # Files should be identical, if not raise an issue and include both saves.
-    if True:
+    if False:
         NephelymSaveEditor(save_in).save(save_out)
         exit()
     
@@ -4132,12 +4148,14 @@ if __name__ == "__main__":
         print(hex_to_float(tit_min.appearance.baseshape.morph.buttsize))
         exit()
     
-    if False:
+    if True:
         # Instance of Editor
         nephelym_save_editor = NephelymSaveEditor(save_in)
+        template_sf = NephelymSaveEditor("0_clean.sav")
         
         # Breeder/Player is always the first Nephelym unless changed in the save header
         breeder_old = nephelym_save_editor.nephelyms[0]
+        sf_breeder = template_sf.playerspiritform
         # breeder = nephelym_save_editor.generate_from_preset('CP_Human_Breeder_Female_Breeder.sav', breeder_old)
         # Change the Spirit form to be breeder. Any NephelymBase derived object will work
         # nephelym_save_editor.playerspiritform.change_form(breeder)
@@ -4152,9 +4170,21 @@ if __name__ == "__main__":
         
         # Remove all nephelym from save editor. Includes breeder
         nephelym_save_editor.remove_all_nephelym()
+
+        breeder_old.stats.set_Lustrank(6)
+        breeder_old.stats.set_Fertilityrank(6)
+        breeder_old.stats.set_Aptituderank(6)
+        breeder_old.stats.set_Lust(2147483647)
+        breeder_old.stats.set_Fertility(2147483647)
+        breeder_old.stats.set_Aptitude(2147483647)
+        # breeder_old.stats.set_Rarity(6)
         
         # Add Nephelym to editor
         nephelym_save_editor.add_nephelym(breeder_old)
+
+        nephelym_save_editor.playerspiritform = sf_breeder
+        nephelym_save_editor.playerseenvariants = template_sf.playerseenvariants.add_all()
+        nephelym_save_editor.playerobtainedvariants = template_sf.playerobtainedvariants.add_all()
         
         # New Nephelym object instance. Needed or changes with affect all instance of exact object. New guid for clones to fix issue of not showing in game
         breeder_clone = breeder_old.clone()
@@ -4173,13 +4203,7 @@ if __name__ == "__main__":
         # breeder_clone.change_stat_level('willpower', 'A')
         # breeder_clone.change_stat_level('dexterity', 'A')
 
-        breeder_clone.stats.set_Lustrank(6)
-        breeder_clone.stats.set_Fertilityrank(6)
-        breeder_clone.stats.set_Aptituderank(6)
-        breeder_clone.stats.set_Lust(2147483647)
-        breeder_clone.stats.set_Fertility(2147483647)
-        breeder_clone.stats.set_Aptitude(2147483647)
-        breeder_clone.stats.set_Rarity(6)
+
 
         # Change Nephelym size
         breeder_clone.change_size('massive')
