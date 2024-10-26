@@ -204,6 +204,12 @@ class DictMacros:
         'swift' : b'Trait.Stat.Swift.',
         'valuable' : b'Trait.Stat.Valuable.',
         'desire' : b'Trait.Stat.Desire.',
+        'divine' : b'Trait.Stat.Divine.',
+        'efficient' : b'Trait.Stat.Efficient.',
+        'hyper' : b'Trait.Stat.Hyper.',
+        'nectar' : b'Trait.Stat.Nectar.',
+        'productive' : b'Trait.Stat.Productive.',
+        'satyriasis' : b'Trait.Stat.Satyriasis.',
     }
     TRAIT_APPERANCE = {
         'busty' : b'Trait.Appearance.Busty.',
@@ -236,6 +242,12 @@ class DictMacros:
         'light' : b'Trait.Element.Light\x00',
         'lightning' : b'Trait.Element.Lightning\x00',
     }
+    TRAIT_AFFINITY = {
+        'diminutive' : b'Trait.Stat.Diminutive.',
+        'enlarged' : b'Trait.Stat.Enlarged.',
+        'influential' : b'Trait.Stat.Influential.',
+        'melding' : b'Trait.Stat.Melding.',
+    }
     TRAIT_NEGATIVE = {
         'hedonist' : b'Trait.Stat.Hedonist.',
         'efficient' : b'Trait.Stat.Efficient.',
@@ -259,6 +271,7 @@ class DictMacros:
     NEPHELYM_TRAITS.update(TRAIT_FORM)
     NEPHELYM_TRAITS.update(TRAIT_NEGATIVE)
     NEPHELYM_TRAITS.update(TRAIT_ELEMENT)
+    NEPHELYM_TRAITS.update(TRAIT_AFFINITY)
 
     TRAITS_WITH_LEVELS.update(BODY_TYPES)
     TRAITS_WITH_LEVELS.update(TRAIT_STAT)
@@ -339,6 +352,28 @@ class DictMacros:
         'fern' : b'Race.Alraune.Fern\x00',
         'fern2' : b'Race.Alraune.Fern.P2\x00',
         'blossom' : b'Race.Alraune.Blossom\x00',
+    }
+
+    RACES_HYBRID = {
+        'akabeko' : b'Race.Hybrid.Akabeko\x00',
+        'amaru' : b'Race.Hybrid.Amaru\x00',
+        'bakeneko' : b'Race.Hybrid.Bakeneko\x00',
+        'basilisk' : b'Race.Hybrid.Basilisk\x00',
+        'catsune' : b'Race.Hybrid.Catsune\x00',
+        'daeva' : b'Race.Hybrid.Daeva\x00',
+        'griffin' : b'Race.Hybrid.Griffin\x00',
+        'hellhound' : b'Race.Hybrid.Hellhound\x00',
+        'jabberwock' : b'Race.Hybrid.Jabberwock\x00',
+        'kludde' : b'Race.Hybrid.Kludde\x00',
+        'kujata' : b'Race.Hybrid.Kujata\x00',
+        'kumiho' : b'Race.Hybrid.Kumiho\x00',
+        'kusarikku' : b'Race.Hybrid.Kusarikku\x00',
+        'lamassu' : b'Race.Hybrid.Lamassu\x00',
+        'oni' : b'Race.Hybrid.Oni\x00',
+        'ryu' : b'Race.Hybrid.Ryu\x00',
+        'surabhi' : b'Race.Hybrid.Surabhi\x00',
+        'tenko' : b'Race.Hybrid.Tenko\x00',
+        'unicorn' : b'Race.Hybrid.Unicorn\x00',
     }
     
     #EVERY Race below is not a valid race for nephelyms
@@ -452,7 +487,7 @@ class DictMacros:
         SEXES['futa'] : RACES_FUTA,
         SEXES['male'] : RACES_MALE,
     }
-    
+
     SEX_POSITIONS = {
         'butterfly' : b'SexScene.Position.Butterfly\x00',
         'cowgirl' : b'SexScene.Position.Cowgirl\x00',
@@ -567,10 +602,13 @@ class ByteMacros:
     EXCITEMENT = b'\x0B\x00\x00\x00\x45\x78\x63\x69\x74\x65\x6D\x65\x6E\x74\x00'
     LUST = b'\x05\x00\x00\x00\x4C\x75\x73\x74\x00'
     LUSTMAX = b'\x08\x00\x00\x00\x4C\x75\x73\x74\x4D\x61\x78\x00'
+    LUSTRANK = b'\t\x00\x00\x00LustRank\x00'
     FERTILITY = b'\x0A\x00\x00\x00\x46\x65\x72\x74\x69\x6C\x69\x74\x79\x00'
     BREEDINGFERTILITY = b'\x12\x00\x00\x00\x42\x72\x65\x65\x64\x69\x6E\x67\x46\x65\x72\x74\x69\x6C\x69\x74\x79\x00'
     FERTILITYRANK = b'\x0E\x00\x00\x00\x46\x65\x72\x74\x69\x6C\x69\x74\x79\x52\x61\x6E\x6B\x00'
     STRENGTH = b'\x09\x00\x00\x00\x53\x74\x72\x65\x6E\x67\x74\x68\x00'
+    APTITUDE = b'\t\x00\x00\x00Aptitude\x00'
+    APTITUDERANK = b'\r\x00\x00\x00AptitudeRank\x00'
     BREEDINGSTRENGTH = b'\x11\x00\x00\x00\x42\x72\x65\x65\x64\x69\x6E\x67\x53\x74\x72\x65\x6E\x67\x74\x68\x00'
     STRENGTHRANK = b'\x0D\x00\x00\x00\x53\x74\x72\x65\x6E\x67\x74\x68\x52\x61\x6E\x6B\x00'
     ALLURE = b'\x07\x00\x00\x00\x41\x6C\x6C\x75\x72\x65\x00'
@@ -613,7 +651,7 @@ class ByteMacros:
     
     
     #Parents
-    MOTHER = b'\x07\x00\x00\x00\x4D\x6F\x74\x68\x65\x72\x00'
+    MOTHER = b'\x07\x00\x00\x00Mother\x00'
     FATHER = b'\x07\x00\x00\x00\x46\x61\x74\x68\x65\x72\x00'
     NAME = b'\x05\x00\x00\x00\x4E\x61\x6D\x65\x00'
     
@@ -621,6 +659,7 @@ class ByteMacros:
     
     #Traits
     TRAITS = b'\x07\x00\x00\x00\x54\x72\x61\x69\x74\x73\x00'
+    DORMANT_TRAITS = b'\x0e\x00\x00\x00DormantTraits\x00'
     PLAYERTAGS = b'\x0B\x00\x00\x00\x50\x6C\x61\x79\x65\x72\x54\x61\x67\x73\x00'
     STATES = b'\x07\x00\x00\x00\x53\x74\x61\x74\x65\x73\x00'
     OFFSPRINGID = b'\x0C\x00\x00\x00\x4F\x66\x66\x73\x70\x72\x69\x6E\x67\x49\x44\x00'
@@ -1699,17 +1738,18 @@ class NephelymBase(GenericParsers):
         _, self.cialpha,          nephelym_data = self._parse_float_property(nephelym_data,  self.CIALPHA)
         _, appliedscheme,         nephelym_data = self._parse_struct_property(nephelym_data, self.APPLIEDSCHEME, self.CHARACTER_APPLIED_SCHEME)
         _, stats,                 nephelym_data = self._parse_struct_property(nephelym_data, self.STAT,          self.CHARACTER_STATS)
-        _, mother,                nephelym_data = self._parse_struct_property(nephelym_data, self.MOTHER,        self.CHARACTER_PARENT_DATA)
-        _, father,                nephelym_data = self._parse_struct_property(nephelym_data, self.FATHER,        self.CHARACTER_PARENT_DATA)
+        _, mother,                nephelym_data = self._parse_struct_property(nephelym_data, self.MOTHER,        self.GUID_PROP)
+        _, father,                nephelym_data = self._parse_struct_property(nephelym_data, self.FATHER,        self.GUID_PROP)
         _, traits,                nephelym_data = self._parse_struct_property(nephelym_data, self.TRAITS,        self.GAMEPLAY_TAG_CONTAINER)
-        _, playertags,            nephelym_data = self._parse_struct_property(nephelym_data, self.PLAYERTAGS,    self.GAMEPLAY_TAG_CONTAINER)
+        _, dormant_traits,        nephelym_data = self._parse_struct_property(nephelym_data, self.DORMANT_TRAITS,self.GAMEPLAY_TAG_CONTAINER)
+        # _, playertags,            nephelym_data = self._parse_struct_property(nephelym_data, self.PLAYERTAGS,    self.GAMEPLAY_TAG_CONTAINER)
         _, states,                nephelym_data = self._parse_struct_property(nephelym_data, self.STATES,        self.GAMEPLAY_TAG_CONTAINER)
         _, self.offspringid,      nephelym_data = self._parse_struct_property(nephelym_data, self.OFFSPRINGID,   self.GUID_PROP)
         _, self.lastmateid,       nephelym_data = self._parse_struct_property(nephelym_data, self.LASTMATEID,    self.GUID_PROP)
         _, self.lastmatesexcount, nephelym_data = self._parse_byte_property(nephelym_data, self.LASTMATESEXCOUNT)
         self.remain = nephelym_data
         
-        
+
         self.variant        = Variant(variant)
         self.appearance     = Appearance(appearance)
         self.splatter       = Splatter(splatter)
@@ -1720,7 +1760,8 @@ class NephelymBase(GenericParsers):
         self.mother         = Parent(mother)
         self.father         = Parent(father)
         self.traits         = Traits(traits)
-        self.playertags     = TagContainer(playertags)
+        self.dormant_traits = Traits(dormant_traits)
+        # self.playertags     = TagContainer(playertags)
         self.states         = TagContainer(states)
      
     def _format_trait(self, trait, level):
@@ -1827,7 +1868,7 @@ class NephelymBase(GenericParsers):
         bytes_out.append(self._get_struct_property_bytes(self.mother.get_data(), self.MOTHER, self.CHARACTER_PARENT_DATA))
         bytes_out.append(self._get_struct_property_bytes(self.father.get_data(), self.FATHER, self.CHARACTER_PARENT_DATA))
         bytes_out.append(self._get_struct_property_bytes(self.traits.get_data(), self.TRAITS, self.GAMEPLAY_TAG_CONTAINER))
-        bytes_out.append(self._get_struct_property_bytes(self.playertags.get_data(), self.PLAYERTAGS, self.GAMEPLAY_TAG_CONTAINER))
+        # bytes_out.append(self._get_struct_property_bytes(self.playertags.get_data(), self.PLAYERTAGS, self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_struct_property_bytes(self.states.get_data(), self.STATES, self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_struct_property_bytes(self.offspringid, self.OFFSPRINGID, self.GUID_PROP))
         bytes_out.append(self._get_struct_property_bytes(self.lastmateid, self.LASTMATEID, self.GUID_PROP))
@@ -1869,7 +1910,32 @@ class Nephelym(NephelymBase):
                 continue
             if trait in self.TRAIT_SIZE:
                 continue
+            if trait in self.TRAIT_FORM:
+                continue
+            if trait in self.TRAIT_APPERANCE_MISC:
+                continue
+            if trait in self.TRAIT_STAT_MISC:
+                continue
+            if trait in self.TRAIT_APPERANCE:
+                continue
+            if trait in self.BODY_TYPES:
+                continue
             self.add_trait(trait)
+        if self.variant.race in self.RACES_HYBRID:
+            self.add_trait('hybrid')
+        if self.variant.is_exotic:
+            self.add_trait('atypical')
+        if self.variant.race in self.RACES_MALE:
+            self.remove_trait('hominal')
+            self.add_trait('feral')
+        else:
+            self.add_trait('hominal')
+        self.add_trait('wild')
+        self.add_trait('busty')
+        self.add_trait('buxom')
+        self.add_trait('hung')
+        self.add_trait('slick')
+        self.add_trait('slender')
     
     def all_traits(self):
         for trait in self.NEPHELYM_TRAITS:
@@ -1880,7 +1946,7 @@ class Nephelym(NephelymBase):
         if self.states.tags == None:
             self.states.tags = []
         self.states.tags.append(self._format_state(state))
-    
+
     def remove_all_traits(self):
         self.traits.tags = []
     
@@ -2019,9 +2085,19 @@ class Stats(GenericParsers):
         _, self.excitement,         stats_bytes = self._parse_int_property(stats_bytes,    self.EXCITEMENT)
         _, self.lust,               stats_bytes = self._parse_int_property(stats_bytes,    self.LUST)
         _, self.lustmax,            stats_bytes = self._parse_int_property(stats_bytes,    self.LUSTMAX)
+        _, self.lustrank,            stats_bytes = self._parse_int_property(stats_bytes,    self.LUSTRANK)
         _, self.fertility,          stats_bytes = self._parse_int_property(stats_bytes,    self.FERTILITY)
-        _, self.breedingfertility,  stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGFERTILITY)
-        _, self.fertilityrank,      stats_bytes = self._parse_byte_property(stats_bytes,   self.FERTILITYRANK)
+        #_, self.breedingfertility,  stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGFERTILITY)
+        _, self.fertilityrank,      stats_bytes = self._parse_int_property(stats_bytes,    self.FERTILITYRANK)
+        _, self.aptitude,           stats_bytes = self._parse_int_property(stats_bytes,    self.APTITUDE)
+        _, self.aptituderank,       stats_bytes = self._parse_int_property(stats_bytes,    self.APTITUDERANK)
+        _, self.value,              stats_bytes = self._parse_int_property(stats_bytes,    self.VALUE)
+        _, self.dailysexcounter,    stats_bytes = self._parse_int_property(stats_bytes,   self.DAILYSEXCOUNTER)
+        _, self.dailyfedcounter,    stats_bytes = self._parse_int_property(stats_bytes,   self.DAILYFEDCOUNTER)
+        _, self.dayspregnant,       stats_bytes = self._parse_int_property(stats_bytes,   self.DAYSPREGNANT)
+        _, self.rarity,             stats_bytes = self._parse_int_property(stats_bytes,   self.RARITY)
+
+        print(stats_bytes[0:100])
         _, self.strength,           stats_bytes = self._parse_int_property(stats_bytes,    self.STRENGTH)
         _, self.breedingstrength,   stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGSTRENGTH)
         _, self.strengthrank,       stats_bytes = self._parse_byte_property(stats_bytes,   self.STRENGTHRANK)
@@ -2034,14 +2110,9 @@ class Stats(GenericParsers):
         _, self.dexterity,          stats_bytes = self._parse_int_property(stats_bytes,    self.DEXTERITY)
         _, self.breedingdexterity,  stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGDEXTERITY)
         _, self.dexterityrank,      stats_bytes = self._parse_byte_property(stats_bytes,   self.DEXTERITYRANK)
-        _, self.dailysexcounter,    stats_bytes = self._parse_byte_property(stats_bytes,   self.DAILYSEXCOUNTER)
-        _, self.dailyfedcounter,    stats_bytes = self._parse_byte_property(stats_bytes,   self.DAILYFEDCOUNTER)
-        _, self.dayspregnant,       stats_bytes = self._parse_byte_property(stats_bytes,   self.DAYSPREGNANT)
-        _, self.value,              stats_bytes = self._parse_int_property(stats_bytes,    self.VALUE)
-        _, self.rarity,             stats_bytes = self._parse_byte_property(stats_bytes,   self.RARITY)
+
         _, preferences,             stats_bytes = self._parse_struct_property(stats_bytes, self.PREFERENCES, self.BREEDING_PREFERENCES)
         self.remain = stats_bytes
-        
         self.prefrences = Prefrences(preferences)
     
     def get_data(self):
@@ -2052,9 +2123,18 @@ class Stats(GenericParsers):
         bytes_out.append(self._get_int_property_bytes(self.excitement,        self.EXCITEMENT))
         bytes_out.append(self._get_int_property_bytes(self.lust,              self.LUST))
         bytes_out.append(self._get_int_property_bytes(self.lustmax,           self.LUSTMAX))
+        bytes_out.append(self._get_int_property_bytes(self.lustrank,           self.LUSTRANK))
         bytes_out.append(self._get_int_property_bytes(self.fertility,         self.FERTILITY))
-        bytes_out.append(self._get_int_property_bytes(self.breedingfertility, self.BREEDINGFERTILITY))
-        bytes_out.append(self._get_byte_property_bytes(self.fertilityrank,     self.FERTILITYRANK))
+        # bytes_out.append(self._get_int_property_bytes(self.breedingfertility, self.BREEDINGFERTILITY))
+        bytes_out.append(self._get_int_property_bytes(self.fertilityrank,     self.FERTILITYRANK))
+        bytes_out.append(self._get_int_property_bytes(self.aptitude,          self.APTITUDE))
+        bytes_out.append(self._get_int_property_bytes(self.aptituderank,      self.APTITUDERANK))
+        bytes_out.append(self._get_int_property_bytes(self.value,             self.VALUE))
+        bytes_out.append(self._get_int_property_bytes(self.dailysexcounter,  self.DAILYSEXCOUNTER))
+        bytes_out.append(self._get_int_property_bytes(self.dailyfedcounter,  self.DAILYFEDCOUNTER))
+        bytes_out.append(self._get_int_property_bytes(self.dayspregnant,     self.DAYSPREGNANT))
+        bytes_out.append(self._get_int_property_bytes(self.rarity,           self.RARITY))
+
         bytes_out.append(self._get_int_property_bytes(self.strength,          self.STRENGTH))
         bytes_out.append(self._get_int_property_bytes(self.breedingstrength,  self.BREEDINGSTRENGTH))
         bytes_out.append(self._get_byte_property_bytes(self.strengthrank,     self.STRENGTHRANK))
@@ -2067,11 +2147,6 @@ class Stats(GenericParsers):
         bytes_out.append(self._get_int_property_bytes(self.dexterity,         self.DEXTERITY))
         bytes_out.append(self._get_int_property_bytes(self.breedingdexterity, self.BREEDINGDEXTERITY))
         bytes_out.append(self._get_byte_property_bytes(self.dexterityrank,    self.DEXTERITYRANK))
-        bytes_out.append(self._get_byte_property_bytes(self.dailysexcounter,  self.DAILYSEXCOUNTER))
-        bytes_out.append(self._get_byte_property_bytes(self.dailyfedcounter,  self.DAILYFEDCOUNTER))
-        bytes_out.append(self._get_byte_property_bytes(self.dayspregnant,     self.DAYSPREGNANT))
-        bytes_out.append(self._get_int_property_bytes(self.value,             self.VALUE))
-        bytes_out.append(self._get_byte_property_bytes(self.rarity,           self.RARITY))
         bytes_out.append(self._get_struct_property_bytes(self.prefrences.get_data(), self.PREFERENCES, self.BREEDING_PREFERENCES))
         
         bytes_out.append(self.remain)
@@ -3578,12 +3653,14 @@ class Variant(GenericParsers):
     
     def _parse_variant_data(self, variant_data):
         variant_data_list, remain = self.split_byte_list(variant_data)
+        self.is_exotic = False
         if len(variant_data_list) == 0:
             self.race = b''
             self.sex = b''
             return
         elif len(variant_data_list) != 2:
             if len(variant_data_list) == 3:
+                self.is_exotic = True
                 print("Warning Preset is for Exotic Preset")
             else:
                 raise Exception(f'Invalid Variant block. expected 2 values, got {len(variant_data_list)}. {variant_data_list}')
@@ -3618,13 +3695,14 @@ class Variant(GenericParsers):
 class Traits(TagContainer):
     def __init__(self, traits):
         if traits == b'\x00\x00\x00\x00': #If there are 0 Traits then trait block should not be added. Fixed broken save edits
-            print('Traits block with no traits')
-            traits = b''
+            # print('Traits block with no traits')
+            # dormant traits can have this
+            traits = b'\x00\x00\x00\x00'
         super().__init__(traits)
     
     def get_data(self):
         if self.tags == []:
-            return b''
+            return b'\x00\x00\x00\x00'
         return super().get_data()
 
 
@@ -3648,7 +3726,7 @@ class NephelymSaveEditor(Appearance):
         _, breederstatprogress,               save_data = self._parse_struct_property(save_data, self.BREEDERSTATPROGRESS, self.BREEDER_STAT_RANK_PROGRESS)
         _, vagrants,                          save_data = self._parse_map_property(save_data, self.VAGRANTS, self.STRUCT_PROPERTY)
         self.remain = save_data
-        
+
         self.header                 = Header(data_header)
         self.nephelyms              = self._parse_nephelyms(data_monster_and_player)
         self.offspringbuffer        = self._parse_nephelyms(offspringbuffer)
@@ -3683,10 +3761,10 @@ class NephelymSaveEditor(Appearance):
         return nephelyms
 
     def _possible_nephelyms(self):
-        for race in self.RACES_FEMALE:
-            yield self.RACES_FEMALE[race], self.SEXES['female']
         for race in self.RACES_FUTA:
             yield self.RACES_FUTA[race], self.SEXES['futa']
+        for race in self.RACES_FEMALE:
+            yield self.RACES_FEMALE[race], self.SEXES['futa']
         for race in self.RACES_MALE:
             yield self.RACES_MALE[race], self.SEXES['male']
 
@@ -3793,7 +3871,10 @@ class NephelymSaveEditor(Appearance):
         new_nephelym.change_appearance(preset)
         new_nephelym.change_name(preset.name)
         new_nephelym.change_race(preset.variant.race)
-        new_nephelym.change_sex(preset.variant.sex)
+        if preset.variant.sex == self.SEXES['female']:
+            new_nephelym.change_sex(self.SEXES['futa'])
+        else:  
+            new_nephelym.change_sex(preset.variant.sex)
         return new_nephelym
 
     def nephelym_to_preset(self, nephelym, preset_out_path=None):
@@ -3863,9 +3944,9 @@ class NephelymSaveEditor(Appearance):
 
 
 if __name__ == "__main__":
-    save_in       = r'0.sav'
+    save_in       = r'2.sav'
     save_out      = r'0_.sav'
-    preset_folder = r'..\CharacterPresets'
+    preset_folder = r'F:\GamePlatforms\Steam\steamapps\common\Breeders of the Nephelym Alpha\OBF\CharacterPresets'
     
     # DEBUGGING: test if parsing and save of save works.
     # Files should be identical, if not raise an issue and include both saves.
@@ -3873,7 +3954,11 @@ if __name__ == "__main__":
         NephelymSaveEditor(save_in).save(save_out)
         exit()
     
-    
+    if False:
+        nephelym_save_editor = NephelymSaveEditor(r'0_clean.sav')
+        breeder = nephelym_save_editor.nephelyms[0]
+        nephelym_save_editor.nephelym_to_preset(breeder)
+
     #Example: of transfering colors from one part to another
     if False:
         x = NephelymSaveEditor(save_in)
@@ -3892,18 +3977,23 @@ if __name__ == "__main__":
     
     #Example: Converting Old saves to Newer version of game. Nephelyms should be safe, but progress may be broken
     if False:
-        old_save = NephelymSaveEditor(r'0.sav')
-        new_save = NephelymSaveEditor(r'1.sav')
+        old_save = NephelymSaveEditor(r'0__.sav')
+        new_save = NephelymSaveEditor(r'2.sav')
         old_save.header.gvas = new_save.header.gvas
-        old_save.save(r'0_.sav')
+        breeder = old_save.nephelyms[0]
+        old_save.remove_all_nephelym()
+        old_save.add_nephelym(breeder)
+        old_save.save(r'0_clean.sav')
         exit()
     
     
-    #Example: Saving Nephelym as a preset.
+    #Example: Saving Nephelym as a preset. Requires template for header data
     if False:
         x = NephelymSaveEditor(save_in)
         breeder = x.nephelyms[0]
-        x.nephelym_to_preset(breeder, preset_folder)
+        template_preset_path = os.listdir(preset_folder)[0]
+        preset_in_path = os.path.join(preset_folder, template_preset_path)
+        x.nephelym_to_preset(preset_in_path, breeder)
         exit()
     
     
@@ -3929,30 +4019,27 @@ if __name__ == "__main__":
         nephelym_save_editor = NephelymSaveEditor(save_in)
         
         # Breeder/Player is always the first Nephelym unless changed in the save header
-        breeder = nephelym_save_editor.nephelyms[0]
-        
+        breeder_old = nephelym_save_editor.nephelyms[0]
+        # breeder = nephelym_save_editor.generate_from_preset('CP_Human_Breeder_Female_Breeder.sav', breeder_old)
         # Change the Spirit form to be breeder. Any NephelymBase derived object will work
-        nephelym_save_editor.playerspiritform.change_form(breeder)
+        # nephelym_save_editor.playerspiritform.change_form(breeder)
         
         # DEBUGGING: Export nephelym_data block to file.
-        nephelym_save_editor.export_nephelym(breeder)
+        # nephelym_save_editor.export_nephelym(breeder)
         
         
         # Looping over nephelyms require copy if altering number of nephelyms.
-        for nephelym in nephelym_save_editor.nephelyms.copy():
-            nephelym.change_stat_level('rarity', 'E')
+        # for nephelym in nephelym_save_editor.nephelyms.copy():
+        #    nephelym.change_stat_level('rarity', 'E')
         
         # Remove all nephelym from save editor. Includes breeder
         nephelym_save_editor.remove_all_nephelym()
         
         # Add Nephelym to editor
-        nephelym_save_editor.add_nephelym(breeder)
-        
-        # Clone all nephelyms currently in editor producing in all sizes
-        nephelym_save_editor.all_size_nephelyms()
+        nephelym_save_editor.add_nephelym(breeder_old)
         
         # New Nephelym object instance. Needed or changes with affect all instance of exact object. New guid for clones to fix issue of not showing in game
-        breeder_clone = breeder.clone()
+        breeder_clone = breeder_old.clone()
         
         # Remove ALL traits of Nephelym
         breeder_clone.remove_all_traits()
@@ -3962,30 +4049,40 @@ if __name__ == "__main__":
         
         # Change Rarity of Nephelym. A Legendary, E Common
         breeder_clone.change_stat_level('rarity', 'A')
-        
-        # Give Nephelym all positive traits 
-        breeder_clone.all_positive_traits()
+        breeder_clone.change_stat_level('fertility', 'A')
+        breeder_clone.change_stat_level('strength', 'A')
+        breeder_clone.change_stat_level('allure', 'A')
+        breeder_clone.change_stat_level('willpower', 'A')
+        breeder_clone.change_stat_level('dexterity', 'A')
         
         # Change Nephelym size
         breeder_clone.change_size('massive')
         
         # Generate Nephelyms from all presets. Template Nephelym for size and traits
         nephelym_save_editor.generate_all_from_presets(preset_folder, breeder_clone)
+        for nephelym in nephelym_save_editor.nephelyms:
+            nephelym.all_positive_traits()
+
+        # Give Nephelym all positive traits 
+        breeder_clone.all_positive_traits()
         
         # Change appearance from another Nephelym. Current example uses last preset
-        breeder_clone.change_appearance(nephelym_save_editor.nephelyms[-1])
+        # breeder_clone.change_appearance(nephelym_save_editor.nephelyms[-1])
         
         # Add Nephelym to Nephelyms
-        nephelym_save_editor.add_nephelym(breeder_clone)
+        # nephelym_save_editor.add_nephelym(breeder_clone)
         
         # Generate all valid possible nephelym. Template Nephelym for appearance, size and traits
-        nephelym_save_editor.generate_all_from_nephelym(breeder_clone)
+        # nephelym_save_editor.generate_all_from_nephelym(breeder_clone)
         
+        # Clone all nephelyms currently in editor producing in all sizes
+        nephelym_save_editor.all_size_nephelyms()
+
         # Change Race. Auto correct sex if invalid pairing
-        breeder.change_race('kestrel')
+        # breeder.change_race('kestrel')
         
         # Change Sex. Auto correct sex if invalid pairing
-        breeder.change_sex('female')
+        # breeder.change_sex('female')
         
         # Export Editor data to specified file
         nephelym_save_editor.save(save_out)
