@@ -40,7 +40,7 @@ def float_to_hex(value):
 
 def guid_to_string(bytes_in):
     if len(bytes_in) != 16:
-        print(bytes_in)
+        # print(bytes_in)
         raise Exception("Guid isn't 16 bytes long")
     p1 = bytes_in[:3].hex()
     p2 = bytes_in[4:5].hex()
@@ -276,6 +276,7 @@ class DictMacros:
     TRAITS_WITH_LEVELS.update(BODY_TYPES)
     TRAITS_WITH_LEVELS.update(TRAIT_STAT)
     TRAITS_WITH_LEVELS.update(TRAIT_APPERANCE)
+    TRAITS_WITH_LEVELS.update(TRAIT_AFFINITY)
     TRAITS_WITH_LEVELS['hedonist'] = TRAIT_NEGATIVE['hedonist']
     TRAITS_WITH_LEVELS['efficient'] = TRAIT_NEGATIVE['efficient']
 
@@ -1046,7 +1047,7 @@ class ByteMacros:
     #Monster Levels
     LEVEL = b'\x06\x00\x00\x00\x4C\x65\x76\x65\x6C\x00'
     PROGRESS = b'\x09\x00\x00\x00\x50\x72\x6F\x67\x72\x65\x73\x73\x00'
-    
+    VARIANTNAME = b'\x0C\x00\x00\x00VariantName\x00'
     
     #Breeder Stat Progression
     STRENGTHPROGRESS =  b'\x11\x00\x00\x00\x53\x74\x72\x65\x6E\x67\x74\x68\x50\x72\x6F\x67\x72\x65\x73\x73\x00'
@@ -1080,23 +1081,33 @@ class ByteMacros:
     
     
     #Breeding Task
+    TASKID = b'\x07\x00\x00\x00TaskID\x00'
     DISPLAYNAME = b'\x0C\x00\x00\x00\x44\x69\x73\x70\x6C\x61\x79\x4E\x61\x6D\x65\x00'
     DISCRIPTION = b'\x0C\x00\x00\x00\x44\x65\x73\x63\x72\x69\x70\x74\x69\x6F\x6E\x00'
+    QUESTGIVER = b'\x0b\x00\x00\x00QuestGiver\x00'
+    VARIANTTEXT = b'\x0c\x00\x00\x00VariantText\x00'
+    SEXTEXT = b'\x08\x00\x00\x00SexText\x00'
+    LEVELTEXT = b'\n\x00\x00\x00LevelText\x00'
+    STATTEXT = b'\t\x00\x00\x00StatText\x00'
     REQUIREDVARIANT = b'\x10\x00\x00\x00\x52\x65\x71\x75\x69\x72\x65\x64\x56\x61\x72\x69\x61\x6E\x74\x00'
     REQUIREDSTAT = b'\x0D\x00\x00\x00\x52\x65\x71\x75\x69\x72\x65\x64\x53\x74\x61\x74\x00'
     REQUIREDFLUID = b'\x0E\x00\x00\x00\x52\x65\x71\x75\x69\x72\x65\x64\x46\x6C\x75\x69\x64\x00'
     REQUIREDSTATVALUE = b'\x12\x00\x00\x00\x52\x65\x71\x75\x69\x72\x65\x64\x53\x74\x61\x74\x56\x61\x6C\x75\x65\x00'
+    REQUIREDITEM = b'\r\x00\x00\x00RequiredItem\x00'
+    REQUIREDITEMCOUNT = b'\x12\x00\x00\x00RequiredItemCount\x00'
     REQUIREDFLUIDML = b'\x11\x00\x00\x00\x52\x65\x71\x75\x69\x72\x65\x64\x46\x6C\x75\x69\x64\x5F\x6D\x6C\x00'
     LEVELREQUIREMENT = b'\x11\x00\x00\x00\x4C\x65\x76\x65\x6C\x52\x65\x71\x75\x69\x72\x65\x6D\x65\x6E\x74\x00'
     REQUIREDTRAITS = b'\x0F\x00\x00\x00\x52\x65\x71\x75\x69\x72\x65\x64\x54\x72\x61\x69\x74\x73\x00'
     REQUIREMENTS = b'\x0D\x00\x00\x00\x52\x65\x71\x75\x69\x72\x65\x6D\x65\x6E\x74\x73\x00'
     DIFFICULTY = b'\x0B\x00\x00\x00\x44\x69\x66\x66\x69\x63\x75\x6C\x74\x79\x00'
-    REWARD = b'\x07\x00\x00\x00\x52\x65\x77\x61\x72\x64\x00'
+    REWARDCOUNT = b'\x0c\x00\x00\x00RewardCount\x00'
+    REWARDS = b'\x08\x00\x00\x00Rewards\x00'
+    DAYSPOSTED = b'\x0b\x00\x00\x00DaysPosted\x00'
     DAYS = b'\x05\x00\x00\x00\x44\x61\x79\x73\x00'
     COMPLETIONTAGS = b'\x0F\x00\x00\x00\x43\x6F\x6D\x70\x6C\x65\x74\x69\x6F\x6E\x54\x61\x67\x73\x00'
     REWARDMESSAGE = b'\x0E\x00\x00\x00\x52\x65\x77\x61\x72\x64\x4D\x65\x73\x73\x61\x67\x65\x00'
     BNOREWARD = b'\x0A\x00\x00\x00\x62\x4E\x6F\x52\x65\x77\x61\x72\x64\x00'
-    
+    BACCEPTED = b'\n\x00\x00\x00bAccepted\x00'
     
     # Vagrants
     VAGRANTS = b'\x09\x00\x00\x00\x56\x61\x67\x72\x61\x6E\x74\x73\x00'
@@ -1256,6 +1267,22 @@ class GenericParsers(DictMacros, ByteMacros, IO):
             bytes_out = name_bytes
         return pre_data, name_prop, bytes_out
     
+    def _parse_notag_string(self, name_bytes : bytes):
+        try:
+            pre_data = b''
+            length_bytes = name_bytes[:4]
+            length = int.from_bytes(length_bytes, 'little')
+            name_prop = name_bytes[4:4+length]
+            bytes_out = name_bytes[4+length:]
+        except InternalPropertyException:
+            print("InternalPropertyException")
+            raise
+        except:
+            pre_data = b''
+            name_prop = b''
+            bytes_out = name_bytes
+        return pre_data, name_prop, bytes_out
+    
     def _parse_byte_property(self, byte_bytes, byte_macro):
         byte_macro += self.BYTE_PROPERTY
         try:
@@ -1279,7 +1306,7 @@ class GenericParsers(DictMacros, ByteMacros, IO):
             bytes_out = byte_bytes
         return pre_data, byte_prop, bytes_out
     
-    def _parse_map_property(self, map_bytes, map_macro, child_macro):
+    def _parse_map_property(self, map_bytes, map_macro, key_macro, value_macro):
         map_macro += self.MAP_PROPERTY
         try:
             cursor = map_bytes.find(map_macro)
@@ -1290,13 +1317,13 @@ class GenericParsers(DictMacros, ByteMacros, IO):
             length_bytes = map_bytes[length_start:length_end]
             length = int.from_bytes(length_bytes, 'little')
             
-            child_macro += child_macro + b'\x00'
+            child_macro = key_macro + value_macro + b'\x00'
             data_start = length_end + len(child_macro)
             data_end = data_start + length
             
             pre_data = map_bytes[:cursor]
-            map_prop = map_bytes[data_start:data_start+length]
-            bytes_out = map_bytes[data_start+length:]
+            map_prop = map_bytes[data_start:data_end]
+            bytes_out = map_bytes[data_end:]
         except:
             pre_data = b''
             map_prop = b''
@@ -1464,6 +1491,11 @@ class GenericParsers(DictMacros, ByteMacros, IO):
                 bytes_out += self.NONE
         return bytes_out
     
+    def _get_notag_string_property_bytes(self, name_bytes):
+        name_length = len(name_bytes)
+        return name_length.to_bytes(4, 'little') \
+            + name_bytes
+    
     def _get_byte_property_bytes(self, byte_bytes, byte_macro):
         if byte_bytes == b'':
             bytes_out = b''
@@ -1477,12 +1509,12 @@ class GenericParsers(DictMacros, ByteMacros, IO):
                 + byte_bytes
         return bytes_out
     
-    def _get_map_property_bytes(self, map_bytes, map_macro, child_macro):
+    def _get_map_property_bytes(self, map_bytes, map_macro, key_macro, value_macro):
         if map_bytes == b'':
             bytes_out = b''
         else:
             map_macro += self.MAP_PROPERTY
-            child_macro += child_macro + b'\x00'
+            child_macro = key_macro + value_macro + b'\x00'
             map_length = len(map_bytes)
             
             bytes_out = map_macro \
@@ -1748,7 +1780,6 @@ class NephelymBase(GenericParsers):
         _, self.lastmateid,       nephelym_data = self._parse_struct_property(nephelym_data, self.LASTMATEID,    self.GUID_PROP)
         _, self.lastmatesexcount, nephelym_data = self._parse_byte_property(nephelym_data, self.LASTMATESEXCOUNT)
         self.remain = nephelym_data
-        
 
         self.variant        = Variant(variant)
         self.appearance     = Appearance(appearance)
@@ -1865,9 +1896,10 @@ class NephelymBase(GenericParsers):
         bytes_out.append(self._get_float_property_bytes(self.cialpha, self.CIALPHA))
         bytes_out.append(self._get_struct_property_bytes(self.appliedscheme.get_data(), self.APPLIEDSCHEME, self.CHARACTER_APPLIED_SCHEME))
         bytes_out.append(self._get_struct_property_bytes(self.stats.get_data(), self.STAT, self.CHARACTER_STATS))
-        bytes_out.append(self._get_struct_property_bytes(self.mother.get_data(), self.MOTHER, self.CHARACTER_PARENT_DATA))
-        bytes_out.append(self._get_struct_property_bytes(self.father.get_data(), self.FATHER, self.CHARACTER_PARENT_DATA))
+        bytes_out.append(self._get_struct_property_bytes(self.mother.get_data(), self.MOTHER, self.GUID_PROP))
+        bytes_out.append(self._get_struct_property_bytes(self.father.get_data(), self.FATHER, self.GUID_PROP))
         bytes_out.append(self._get_struct_property_bytes(self.traits.get_data(), self.TRAITS, self.GAMEPLAY_TAG_CONTAINER))
+        bytes_out.append(self._get_struct_property_bytes(self.dormant_traits.get_data(), self.DORMANT_TRAITS, self.GAMEPLAY_TAG_CONTAINER))
         # bytes_out.append(self._get_struct_property_bytes(self.playertags.get_data(), self.PLAYERTAGS, self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_struct_property_bytes(self.states.get_data(), self.STATES, self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_struct_property_bytes(self.offspringid, self.OFFSPRINGID, self.GUID_PROP))
@@ -1920,6 +1952,8 @@ class Nephelym(NephelymBase):
                 continue
             if trait in self.BODY_TYPES:
                 continue
+            if trait in self.TRAIT_AFFINITY:
+                continue
             self.add_trait(trait)
         if self.variant.race in self.RACES_HYBRID:
             self.add_trait('hybrid')
@@ -1929,6 +1963,7 @@ class Nephelym(NephelymBase):
             self.remove_trait('hominal')
             self.add_trait('feral')
         else:
+            self.remove_trait('hominal')
             self.add_trait('hominal')
         self.add_trait('wild')
         self.add_trait('busty')
@@ -1936,6 +1971,7 @@ class Nephelym(NephelymBase):
         self.add_trait('hung')
         self.add_trait('slick')
         self.add_trait('slender')
+        self.add_trait('melding')
     
     def all_traits(self):
         for trait in self.NEPHELYM_TRAITS:
@@ -2013,17 +2049,17 @@ class PlayerSpiritForm(Nephelym):
         _, variant,       spiritform_data = self._parse_struct_property(spiritform_data, self.VARIANT,  self.GAMEPLAY_TAG_CONTAINER)
         _, appearance,    spiritform_data = self._parse_struct_property(spiritform_data, self.APPEARANCE,    self.CHARACTER_APPEARANCE)
         _, appliedscheme, spiritform_data = self._parse_struct_property(spiritform_data, self.APPLIEDSCHEME, self.CHARACTER_APPLIED_SCHEME)
-        _, mother,        spiritform_data = self._parse_struct_property(spiritform_data, self.MOTHER,        self.CHARACTER_PARENT_DATA)
-        _, father,        spiritform_data = self._parse_struct_property(spiritform_data, self.FATHER,        self.CHARACTER_PARENT_DATA)
-        _, traits,        spiritform_data = self._parse_struct_property(spiritform_data, self.TRAITS,        self.GAMEPLAY_TAG_CONTAINER)
+        # _, mother,        spiritform_data = self._parse_struct_property(spiritform_data, self.MOTHER,        self.CHARACTER_PARENT_DATA)
+        #_, father,        spiritform_data = self._parse_struct_property(spiritform_data, self.FATHER,        self.CHARACTER_PARENT_DATA)
+        #_, traits,        spiritform_data = self._parse_struct_property(spiritform_data, self.TRAITS,        self.GAMEPLAY_TAG_CONTAINER)
         self.remain =     spiritform_data
         
         self.variant = Variant(variant)
         self.appearance = Appearance(appearance)
         self.appliedscheme = AppliedScheme(appliedscheme)
-        self.mother = Parent(mother)
-        self.father = Parent(father)
-        self.traits = Traits(traits)
+        #self.mother = Parent(mother)
+        #self.father = Parent(father)
+        #self.traits = Traits(traits)
         
         if self.remain != self.NONE:
             print(f'Invalid spiritform remains. {self.remain}')
@@ -2041,9 +2077,9 @@ class PlayerSpiritForm(Nephelym):
         bytes_out.append(self._get_struct_property_bytes(self.variant.get_data(), self.VARIANT,  self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_struct_property_bytes(self.appearance.get_data(), self.APPEARANCE, self.CHARACTER_APPEARANCE))
         bytes_out.append(self._get_struct_property_bytes(self.appliedscheme.get_data(), self.APPLIEDSCHEME, self.CHARACTER_APPLIED_SCHEME))
-        bytes_out.append(self._get_struct_property_bytes(self.mother.get_data(), self.MOTHER, self.CHARACTER_PARENT_DATA))
-        bytes_out.append(self._get_struct_property_bytes(self.father.get_data(), self.FATHER, self.CHARACTER_PARENT_DATA))
-        bytes_out.append(self._get_struct_property_bytes(self.traits.get_data(), self.TRAITS, self.GAMEPLAY_TAG_CONTAINER))
+        #bytes_out.append(self._get_struct_property_bytes(self.mother.get_data(), self.MOTHER, self.CHARACTER_PARENT_DATA))
+        #bytes_out.append(self._get_struct_property_bytes(self.father.get_data(), self.FATHER, self.CHARACTER_PARENT_DATA))
+        #bytes_out.append(self._get_struct_property_bytes(self.traits.get_data(), self.TRAITS, self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self.remain)
         return self.list_to_bytes(bytes_out)
 
@@ -2097,23 +2133,22 @@ class Stats(GenericParsers):
         _, self.dayspregnant,       stats_bytes = self._parse_int_property(stats_bytes,   self.DAYSPREGNANT)
         _, self.rarity,             stats_bytes = self._parse_int_property(stats_bytes,   self.RARITY)
 
-        print(stats_bytes[0:100])
-        _, self.strength,           stats_bytes = self._parse_int_property(stats_bytes,    self.STRENGTH)
-        _, self.breedingstrength,   stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGSTRENGTH)
-        _, self.strengthrank,       stats_bytes = self._parse_byte_property(stats_bytes,   self.STRENGTHRANK)
-        _, self.allure,             stats_bytes = self._parse_int_property(stats_bytes,    self.ALLURE)
-        _, self.breedingallure,     stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGALLURE)
-        _, self.allurerank,         stats_bytes = self._parse_byte_property(stats_bytes,   self.ALLURERANK)
-        _, self.willpower,          stats_bytes = self._parse_int_property(stats_bytes,    self.WILLPOWER)
-        _, self.breedingwillpower,  stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGWILLPOWER)
-        _, self.willpowerrank,      stats_bytes = self._parse_byte_property(stats_bytes,   self.WILLPOWERRANK)
-        _, self.dexterity,          stats_bytes = self._parse_int_property(stats_bytes,    self.DEXTERITY)
-        _, self.breedingdexterity,  stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGDEXTERITY)
-        _, self.dexterityrank,      stats_bytes = self._parse_byte_property(stats_bytes,   self.DEXTERITYRANK)
+        # _, self.strength,           stats_bytes = self._parse_int_property(stats_bytes,    self.STRENGTH)
+        # _, self.breedingstrength,   stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGSTRENGTH)
+        # _, self.strengthrank,       stats_bytes = self._parse_byte_property(stats_bytes,   self.STRENGTHRANK)
+        # _, self.allure,             stats_bytes = self._parse_int_property(stats_bytes,    self.ALLURE)
+        # _, self.breedingallure,     stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGALLURE)
+        # _, self.allurerank,         stats_bytes = self._parse_byte_property(stats_bytes,   self.ALLURERANK)
+        # _, self.willpower,          stats_bytes = self._parse_int_property(stats_bytes,    self.WILLPOWER)
+        # _, self.breedingwillpower,  stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGWILLPOWER)
+        # _, self.willpowerrank,      stats_bytes = self._parse_byte_property(stats_bytes,   self.WILLPOWERRANK)
+        # _, self.dexterity,          stats_bytes = self._parse_int_property(stats_bytes,    self.DEXTERITY)
+        # _, self.breedingdexterity,  stats_bytes = self._parse_int_property(stats_bytes,    self.BREEDINGDEXTERITY)
+        # _, self.dexterityrank,      stats_bytes = self._parse_byte_property(stats_bytes,   self.DEXTERITYRANK)
 
-        _, preferences,             stats_bytes = self._parse_struct_property(stats_bytes, self.PREFERENCES, self.BREEDING_PREFERENCES)
+        # _, preferences,             stats_bytes = self._parse_struct_property(stats_bytes, self.PREFERENCES, self.BREEDING_PREFERENCES)
         self.remain = stats_bytes
-        self.prefrences = Prefrences(preferences)
+        # self.prefrences = Prefrences(preferences)
     
     def get_data(self):
         bytes_out = []
@@ -2135,22 +2170,62 @@ class Stats(GenericParsers):
         bytes_out.append(self._get_int_property_bytes(self.dayspregnant,     self.DAYSPREGNANT))
         bytes_out.append(self._get_int_property_bytes(self.rarity,           self.RARITY))
 
-        bytes_out.append(self._get_int_property_bytes(self.strength,          self.STRENGTH))
-        bytes_out.append(self._get_int_property_bytes(self.breedingstrength,  self.BREEDINGSTRENGTH))
-        bytes_out.append(self._get_byte_property_bytes(self.strengthrank,     self.STRENGTHRANK))
-        bytes_out.append(self._get_int_property_bytes(self.allure,            self.ALLURE))
-        bytes_out.append(self._get_int_property_bytes(self.breedingallure,    self.BREEDINGALLURE))
-        bytes_out.append(self._get_byte_property_bytes(self.allurerank,       self.ALLURERANK))
-        bytes_out.append(self._get_int_property_bytes(self.willpower,         self.WILLPOWER))
-        bytes_out.append(self._get_int_property_bytes(self.breedingwillpower, self.BREEDINGWILLPOWER))
-        bytes_out.append(self._get_byte_property_bytes(self.willpowerrank,    self.WILLPOWERRANK))
-        bytes_out.append(self._get_int_property_bytes(self.dexterity,         self.DEXTERITY))
-        bytes_out.append(self._get_int_property_bytes(self.breedingdexterity, self.BREEDINGDEXTERITY))
-        bytes_out.append(self._get_byte_property_bytes(self.dexterityrank,    self.DEXTERITYRANK))
-        bytes_out.append(self._get_struct_property_bytes(self.prefrences.get_data(), self.PREFERENCES, self.BREEDING_PREFERENCES))
+        # bytes_out.append(self._get_int_property_bytes(self.strength,          self.STRENGTH))
+        # bytes_out.append(self._get_int_property_bytes(self.breedingstrength,  self.BREEDINGSTRENGTH))
+        # bytes_out.append(self._get_byte_property_bytes(self.strengthrank,     self.STRENGTHRANK))
+        # bytes_out.append(self._get_int_property_bytes(self.allure,            self.ALLURE))
+        # bytes_out.append(self._get_int_property_bytes(self.breedingallure,    self.BREEDINGALLURE))
+        # bytes_out.append(self._get_byte_property_bytes(self.allurerank,       self.ALLURERANK))
+        # bytes_out.append(self._get_int_property_bytes(self.willpower,         self.WILLPOWER))
+        # bytes_out.append(self._get_int_property_bytes(self.breedingwillpower, self.BREEDINGWILLPOWER))
+        # bytes_out.append(self._get_byte_property_bytes(self.willpowerrank,    self.WILLPOWERRANK))
+        # bytes_out.append(self._get_int_property_bytes(self.dexterity,         self.DEXTERITY))
+        # bytes_out.append(self._get_int_property_bytes(self.breedingdexterity, self.BREEDINGDEXTERITY))
+        # bytes_out.append(self._get_byte_property_bytes(self.dexterityrank,    self.DEXTERITYRANK))
+        # bytes_out.append(self._get_struct_property_bytes(self.prefrences.get_data(), self.PREFERENCES, self.BREEDING_PREFERENCES))
         
         bytes_out.append(self.remain)
         return self.list_to_bytes(bytes_out)
+    
+    def set_XP(self, number):
+        self.xp = int.to_bytes(number, 4, 'little')
+        return
+    def set_XPtarget(self, number):
+        self.xptarget = int.to_bytes(number, 4, 'little')
+        return
+    def set_Level(self, number):
+        self.level = int.to_bytes(number, 4, 'little')
+        return
+    def set_Excitement(self, number):
+        self.excitement = int.to_bytes(number, 4, 'little')
+        return
+    def set_Lust(self, number):
+        self.lust = int.to_bytes(number, 4, 'little')
+        return
+    def set_Lustmax(self, number):
+        self.lustmax = int.to_bytes(number, 4, 'little')
+        return
+    def set_Lustrank(self, number):
+        self.lustrank = int.to_bytes(number, 4, 'little')
+        return
+    def set_Fertility(self, number):
+        self.fertility = int.to_bytes(number, 4, 'little')
+        return
+    def set_Fertilityrank(self, number):
+        self.fertilityrank = int.to_bytes(number, 4, 'little')
+        return
+    def set_Aptitude(self, number):
+        self.aptitude = int.to_bytes(number, 4, 'little')
+        return
+    def set_Aptituderank(self, number):
+        self.aptituderank = int.to_bytes(number, 4, 'little')
+        return
+    def set_Value(self, number):
+        self.value = int.to_bytes(number, 4, 'little')
+        return
+    def set_Rarity(self, number):
+        self.rarity = int.to_bytes(number, 4, 'little')
+        return
 
 class Prefrences(GenericParsers):
     def __init__(self, prefrences_bytes):
@@ -3260,7 +3335,6 @@ class AppliedScheme(GenericParsers):
         _, tags, appliedscheme_bytes = self._parse_struct_property(appliedscheme_bytes, self.TAGS, self.GAMEPLAY_TAG_CONTAINER)
         _, self.name, appliedscheme_bytes = self._parse_str_property(appliedscheme_bytes, self.NAME)
         self.remain = appliedscheme_bytes
-        
         self.tags = TagContainer(tags)
     
     def get_data(self):
@@ -3282,11 +3356,12 @@ class MonsterLevels(GenericParsers):
         count = int.from_bytes(monsterlevels_data[:4], 'little')
         monsterlevels_data = monsterlevels_data[4:]
         for _ in range(count):
-            _, tagname,  monsterlevels_data = self._parse_name_property(monsterlevels_data, self.TAGNAME, True)
+            _, tagname,  monsterlevels_data = self._parse_notag_string(monsterlevels_data)
             _, level,    monsterlevels_data = self._parse_int_property(monsterlevels_data, self.LEVEL)
             _, progress, monsterlevels_data = self._parse_int_property(monsterlevels_data, self.PROGRESS)
+            _, variantname, monsterlevels_data = self._parse_text_property(monsterlevels_data, self.VARIANTNAME)
             monsterlevels_data = monsterlevels_data[len(self.NONE):]
-            self.monsterlevel.append(MonsterLevel(tagname, level, progress, self.NONE))
+            self.monsterlevel.append(MonsterLevel(tagname, level, progress, variantname, self.NONE))
         self.remain = monsterlevels_data
         
     def get_data(self):
@@ -3300,17 +3375,19 @@ class MonsterLevels(GenericParsers):
         return self.list_to_bytes(bytes_out)
 
 class MonsterLevel(GenericParsers):
-    def __init__(self, tagname, level, progress, remain):
+    def __init__(self, tagname, level, progress, variantname, remain):
         self.tagname = tagname
         self.level = level
         self.progress = progress
+        self.variantname = variantname
         self.remain = remain
         
     def get_data(self):
         bytes_out = []
-        bytes_out.append(self._get_name_property_bytes(self.tagname, self.TAGNAME, True))
+        bytes_out.append(self._get_notag_string_property_bytes(self.tagname))
         bytes_out.append(self._get_int_property_bytes(self.level, self.LEVEL))
         bytes_out.append(self._get_int_property_bytes(self.progress, self.PROGRESS))
+        bytes_out.append(self._get_text_property_bytes(self.variantname, self.VARIANTNAME))
         bytes_out.append(self.remain)
         return self.list_to_bytes(bytes_out)
 
@@ -3437,15 +3514,18 @@ class WorldState(GenericParsers):
         _, self.minute,                       worldstate_data = self._parse_int_property(worldstate_data,    self.MINUTE)
         _, self.hour,                         worldstate_data = self._parse_int_property(worldstate_data,    self.HOUR)
         _, self.day,                          worldstate_data = self._parse_int_property(worldstate_data,    self.DAY)
-        _, self.month,                        worldstate_data = self._parse_int_property(worldstate_data,    self.MONTH)
+        # _, self.month,                        worldstate_data = self._parse_int_property(worldstate_data,    self.MONTH)
         _, activetravelshrines,               worldstate_data = self._parse_struct_property(worldstate_data, self.ACTIVETRAVELSHRINES, self.GAMEPLAY_TAG_CONTAINER)
         _, acquiredranchupgrades,             worldstate_data = self._parse_struct_property(worldstate_data, self.ACQUIREDRANCHUPGRADES, self.GAMEPLAY_TAG_CONTAINER)
         _, dialoguestates,                    worldstate_data = self._parse_array_struct_property(worldstate_data,  self.DIALOGUESTATES,  self.DIALOGUESTATES,  self.DIALOGUE_STATE)
-        _, monsterlevels,                     worldstate_data = self._parse_map_property(worldstate_data, self.MONSTERLEVELS, self.STRUCT_PROPERTY)
+        #print(worldstate_data[0:400])
+        _, monsterlevels,                     worldstate_data = self._parse_map_property(worldstate_data, self.MONSTERLEVELS, self.STR_PROPERTY, self.STRUCT_PROPERTY)
         _, self.fernfed,                      worldstate_data = self._parse_int_property(worldstate_data,    self.FERNFED)
+        
         _, breedingtasks,                     worldstate_data = self._parse_array_struct_property(worldstate_data, self.BREEDINGTASKS, self.BREEDINGTASKS, self.BREEDING_TASK)
-        _, specialbreedingtasks,              worldstate_data = self._parse_array_struct_property(worldstate_data, self.SPECIALBREEDINGTASKS, self.SPECIALBREEDINGTASKS, self.BREEDING_TASK)
-        _, self.dayssincebreedingtaskrefresh, worldstate_data = self._parse_int_property(worldstate_data,    self.DAYSSINCEBREEDINGTASKREFRESH)
+
+        # _, specialbreedingtasks,              worldstate_data = self._parse_array_struct_property(worldstate_data, self.SPECIALBREEDINGTASKS, self.SPECIALBREEDINGTASKS, self.BREEDING_TASK)
+        # _, self.dayssincebreedingtaskrefresh, worldstate_data = self._parse_int_property(worldstate_data,    self.DAYSSINCEBREEDINGTASKREFRESH)
         
         self.remain =                worldstate_data
         self.activetravelshrines =   GameplayTag(activetravelshrines)
@@ -3453,7 +3533,7 @@ class WorldState(GenericParsers):
         self.dialoguestates =        DialogueStates(dialoguestates)
         self.monsterlevels =         MonsterLevels(monsterlevels)
         self.breedingtasks =         BreedingTasks(breedingtasks)
-        self.specialbreedingtasks =  BreedingTasks(specialbreedingtasks)
+        # self.specialbreedingtasks =  BreedingTasks(specialbreedingtasks)
         
     def get_data(self):
         bytes_out = []
@@ -3461,15 +3541,15 @@ class WorldState(GenericParsers):
         bytes_out.append(self._get_int_property_bytes(self.minute, self.MINUTE))
         bytes_out.append(self._get_int_property_bytes(self.hour, self.HOUR))
         bytes_out.append(self._get_int_property_bytes(self.day, self.DAY))
-        bytes_out.append(self._get_int_property_bytes(self.month, self.MONTH))
+        # bytes_out.append(self._get_int_property_bytes(self.month, self.MONTH))
         bytes_out.append(self._get_struct_property_bytes(self.activetravelshrines.get_data(), self.ACTIVETRAVELSHRINES, self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_struct_property_bytes(self.acquiredranchupgrades.get_data(), self.ACQUIREDRANCHUPGRADES, self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_array_struct_property_bytes(self.dialoguestates.get_data(), self.DIALOGUESTATES, self.DIALOGUESTATES, self.DIALOGUE_STATE))
-        bytes_out.append(self._get_map_property_bytes(self.monsterlevels.get_data(), self.MONSTERLEVELS, self.STRUCT_PROPERTY))
+        bytes_out.append(self._get_map_property_bytes(self.monsterlevels.get_data(), self.MONSTERLEVELS, self.STR_PROPERTY, self.STRUCT_PROPERTY))
         bytes_out.append(self._get_int_property_bytes(self.fernfed, self.FERNFED))
         bytes_out.append(self._get_array_struct_property_bytes(self.breedingtasks.get_data(), self.BREEDINGTASKS, self.BREEDINGTASKS, self.BREEDING_TASK))
-        bytes_out.append(self._get_array_struct_property_bytes(self.specialbreedingtasks.get_data(), self.SPECIALBREEDINGTASKS, self.SPECIALBREEDINGTASKS, self.BREEDING_TASK))
-        bytes_out.append(self._get_int_property_bytes(self.dayssincebreedingtaskrefresh, self.DAYSSINCEBREEDINGTASKREFRESH))
+        # bytes_out.append(self._get_array_struct_property_bytes(self.specialbreedingtasks.get_data(), self.SPECIALBREEDINGTASKS, self.SPECIALBREEDINGTASKS, self.BREEDING_TASK))
+        # bytes_out.append(self._get_int_property_bytes(self.dayssincebreedingtaskrefresh, self.DAYSSINCEBREEDINGTASKREFRESH))
         bytes_out.append(self.remain)
         return self.list_to_bytes(bytes_out)
 
@@ -3526,69 +3606,99 @@ class BreedingTasks(GenericParsers):
         self.breedingtask_list = []
         
         while len(breedingtasks_data) > 0:
+            _, taskID,              breedingtasks_data = self._parse_struct_property(breedingtasks_data, self.TASKID, self.GUID_PROP)
             _, displayname,         breedingtasks_data = self._parse_text_property(breedingtasks_data, self.DISPLAYNAME)
             _, discription,         breedingtasks_data = self._parse_text_property(breedingtasks_data, self.DISCRIPTION)
+            _, questgiver,          breedingtasks_data = self._parse_text_property(breedingtasks_data, self.QUESTGIVER)
+            _, varianttext,         breedingtasks_data = self._parse_text_property(breedingtasks_data, self.VARIANTTEXT)
+            _, sextext,             breedingtasks_data = self._parse_text_property(breedingtasks_data, self.SEXTEXT)
+            _, leveltext,           breedingtasks_data = self._parse_text_property(breedingtasks_data, self.LEVELTEXT)
+            _, stattext,            breedingtasks_data = self._parse_text_property(breedingtasks_data, self.STATTEXT)
             _, requiredvariant,     breedingtasks_data = self._parse_struct_property(breedingtasks_data, self.REQUIREDVARIANT, self.GAMEPLAY_TAG_CONTAINER)
             _, requiredstat,        breedingtasks_data = self._parse_struct_property(breedingtasks_data, self.REQUIREDSTAT, self.GAMEPLAY_TAG)
-            _, requiredfluid,       breedingtasks_data = self._parse_struct_property(breedingtasks_data, self.REQUIREDFLUID, self.GAMEPLAY_TAG_CONTAINER)
             _, requiredstatvalue,   breedingtasks_data = self._parse_int_property(breedingtasks_data, self.REQUIREDSTATVALUE)
-            _, requiredfluidml,     breedingtasks_data = self._parse_int_property(breedingtasks_data, self.REQUIREDFLUIDML)
+            _, requireditem,        breedingtasks_data = self._parse_struct_property(breedingtasks_data, self.REQUIREDITEM, self.GAMEPLAY_TAG)
+            _, requireditemcount,   breedingtasks_data = self._parse_int_property(breedingtasks_data, self.REQUIREDITEMCOUNT)
             _, levelrequirement,    breedingtasks_data = self._parse_int_property(breedingtasks_data, self.LEVELREQUIREMENT)
             _, requiredtraits,      breedingtasks_data = self._parse_struct_property(breedingtasks_data, self.REQUIREDTRAITS, self.GAMEPLAY_TAG_CONTAINER)
-            _, requirements,        breedingtasks_data = self._parse_text_property(breedingtasks_data, self.REQUIREMENTS)
             _, difficulty,          breedingtasks_data = self._parse_int_property(breedingtasks_data, self.DIFFICULTY)
-            _, reward,              breedingtasks_data = self._parse_int_property(breedingtasks_data, self.REWARD)
-            _, days,                breedingtasks_data = self._parse_int_property(breedingtasks_data, self.DAYS)
+            _, rewardcount,         breedingtasks_data = self._parse_int_property(breedingtasks_data, self.REWARDCOUNT)
+            _, rewards,             breedingtasks_data = self._parse_struct_property(breedingtasks_data, self.REWARDS, self.GAMEPLAY_TAG_CONTAINER)
+            _, daysposted,          breedingtasks_data = self._parse_int_property(breedingtasks_data, self.DAYSPOSTED)
             _, completiontags,      breedingtasks_data = self._parse_struct_property(breedingtasks_data, self.COMPLETIONTAGS, self.GAMEPLAY_TAG_CONTAINER)
             _, rewardmessage,       breedingtasks_data = self._parse_text_property(breedingtasks_data, self.REWARDMESSAGE)
             _, bnoreward,           breedingtasks_data = self._parse_bool_property(breedingtasks_data, self.BNOREWARD)
+            _, baccepted,           breedingtasks_data = self._parse_bool_property(breedingtasks_data, self.BACCEPTED)
             remain = self.NONE
             breedingtasks_data = breedingtasks_data[len(self.NONE):]
-            breedingtask = BreedingTask(displayname, discription, requiredvariant, requiredstat, requiredfluid, requiredstatvalue, requiredfluidml, levelrequirement, requiredtraits, requirements, difficulty, reward, days, completiontags, rewardmessage, bnoreward, remain)
+            breedingtask = BreedingTask(
+                taskID, displayname, discription, questgiver, varianttext, sextext, leveltext, stattext,
+                requiredvariant, requiredstat, requiredstatvalue, requireditem, requireditemcount, 
+                levelrequirement, requiredtraits, difficulty, rewardcount, rewards, daysposted, completiontags,
+                rewardmessage, bnoreward, baccepted, remain
+            )
             self.breedingtask_list.append(breedingtask)
         
     def get_data(self):
         return self.breedingtask_list
 
 class BreedingTask(GenericParsers):
-    def __init__(self, displayname, discription, requiredvariant, requiredstat, requiredfluid, requiredstatvalue, requiredfluidml, levelrequirement, requiredtraits, requirements, difficulty, reward, days, completiontags, rewardmessage, bnoreward, remain):
+    def __init__(self, taskID, displayname, discription, questgiver, varianttext, sextext, leveltext, stattext,
+                requiredvariant, requiredstat, requiredstatvalue, requireditem, requireditemcount, 
+                levelrequirement, requiredtraits, difficulty, rewardcount, rewards, daysposted, completiontags,
+                rewardmessage, bnoreward, baccepted, remain):
+        self.taskID = taskID
         self.displayname = displayname
         self.discription = discription
+        self.questgiver = questgiver
+        self.varianttext = varianttext
+        self.sextext = sextext
+        self.leveltext = leveltext
+        self.stattext = stattext
         _, self.requiredstat, _ = self._parse_name_property(requiredstat, self.TAGNAME, True)
         self.requiredstatvalue = requiredstatvalue
-        self.requiredfluidml = requiredfluidml
+        _, self.requireditem, _ = self._parse_name_property(requireditem, self.TAGNAME, True)
+        self.requireditemcount = requireditemcount
         self.levelrequirement = levelrequirement
-        self.requirements = requirements
         self.difficulty = difficulty
-        self.reward = reward
-        self.days = days
+        self.rewardcount = rewardcount
+        self.daysposted = daysposted
         self.rewardmessage = rewardmessage
         self.bnoreward = bnoreward
+        self.baccepted = baccepted
         self.remain = remain
         
         self.requiredvariant = TagContainer(requiredvariant)
-        self.requiredfluid = TagContainer(requiredfluid)
+        #self.requiredfluid = TagContainer(requiredfluid)
         self.requiredtraits = TagContainer(requiredtraits)
+        self.rewards = TagContainer(rewards)
         self.completiontags = TagContainer(completiontags)
     
     def get_data(self):
         bytes_out = []
+        bytes_out.append(self._get_struct_property_bytes(self.taskID, self.TASKID, self.GUID_PROP))
         bytes_out.append(self._get_text_property_bytes(self.displayname,    self.DISPLAYNAME))
         bytes_out.append(self._get_text_property_bytes(self.discription,    self.DISCRIPTION))
+        bytes_out.append(self._get_text_property_bytes(self.questgiver,    self.QUESTGIVER))
+        bytes_out.append(self._get_text_property_bytes(self.varianttext,    self.VARIANTTEXT))
+        bytes_out.append(self._get_text_property_bytes(self.sextext,    self.SEXTEXT))
+        bytes_out.append(self._get_text_property_bytes(self.leveltext,    self.LEVELTEXT))
+        bytes_out.append(self._get_text_property_bytes(self.stattext,    self.STATTEXT))
         bytes_out.append(self._get_struct_property_bytes(self.requiredvariant.get_data(),   self.REQUIREDVARIANT,   self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_struct_property_bytes(self._get_name_property_bytes(self.requiredstat, self.TAGNAME, True), self.REQUIREDSTAT, self.GAMEPLAY_TAG))
-        bytes_out.append(self._get_struct_property_bytes(self.requiredfluid.get_data(),     self.REQUIREDFLUID,     self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_int_property_bytes(self.requiredstatvalue,   self.REQUIREDSTATVALUE))
-        bytes_out.append(self._get_int_property_bytes(self.requiredfluidml,     self.REQUIREDFLUIDML))
+        bytes_out.append(self._get_struct_property_bytes(self._get_name_property_bytes(self.requireditem, self.TAGNAME, True), self.REQUIREDITEM, self.GAMEPLAY_TAG))
+        bytes_out.append(self._get_int_property_bytes(self.requireditemcount,   self.REQUIREDITEMCOUNT))
         bytes_out.append(self._get_int_property_bytes(self.levelrequirement,    self.LEVELREQUIREMENT))
         bytes_out.append(self._get_struct_property_bytes(self.requiredtraits.get_data(),    self.REQUIREDTRAITS,    self.GAMEPLAY_TAG_CONTAINER))
-        bytes_out.append(self._get_text_property_bytes(self.requirements,   self.REQUIREMENTS))
         bytes_out.append(self._get_int_property_bytes(self.difficulty,          self.DIFFICULTY))
-        bytes_out.append(self._get_int_property_bytes(self.reward,              self.REWARD))
-        bytes_out.append(self._get_int_property_bytes(self.days,                self.DAYS))
+        bytes_out.append(self._get_int_property_bytes(self.rewardcount,          self.REWARDCOUNT))
+        bytes_out.append(self._get_struct_property_bytes(self.rewards.get_data(),   self.REWARDS, self.GAMEPLAY_TAG_CONTAINER))
+        bytes_out.append(self._get_int_property_bytes(self.daysposted,                self.DAYSPOSTED))
         bytes_out.append(self._get_struct_property_bytes(self.completiontags.get_data(),    self.COMPLETIONTAGS,    self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_text_property_bytes(self.rewardmessage,  self.REWARDMESSAGE))
         bytes_out.append(self._get_bool_property_bytes(self.bnoreward, self.BNOREWARD))
+        bytes_out.append(self._get_bool_property_bytes(self.baccepted, self.BACCEPTED))
         bytes_out.append(self.remain)
         return self.list_to_bytes(bytes_out)
 
@@ -3612,7 +3722,11 @@ class TagContainer(GenericParsers):
         return str(self.tags)
     
     def __init__(self, tag_bytes):
+        self.empty = False
         if tag_bytes == b'':
+            self.tags = None
+            self.empty = True
+        if tag_bytes == b'\x00\x00\x00\x00':
             self.tags = None
         else:
             self.tags = []
@@ -3629,6 +3743,10 @@ class TagContainer(GenericParsers):
         return tags_out
     
     def get_data(self):
+        if self.empty:
+            return b''
+        if self.tags == None:
+            return b'\x00\x00\x00\x00'
         bytes_out = []
         if isinstance(self.tags, list):
             bytes_out.append(len(self.tags).to_bytes(4, 'little'))
@@ -3723,8 +3841,8 @@ class NephelymSaveEditor(Appearance):
         _, playerseenvariants,                save_data = self._parse_array_struct_property(save_data, self.PLAYERSEENVARIANTS,     self.PLAYERSEENVARIANTS,     self.GAMEPLAY_TAG_CONTAINER)
         _, gameflags,                         save_data = self._parse_struct_property(save_data, self.GAMEFLAGS,           self.GAMEPLAY_TAG_CONTAINER)
         _, worldstate,                        save_data = self._parse_struct_property(save_data, self.WORLDSTATE,          self.SEXY_WOLD_STATE)
-        _, breederstatprogress,               save_data = self._parse_struct_property(save_data, self.BREEDERSTATPROGRESS, self.BREEDER_STAT_RANK_PROGRESS)
-        _, vagrants,                          save_data = self._parse_map_property(save_data, self.VAGRANTS, self.STRUCT_PROPERTY)
+        # _, breederstatprogress,               save_data = self._parse_struct_property(save_data, self.BREEDERSTATPROGRESS, self.BREEDER_STAT_RANK_PROGRESS)
+        _, vagrants,                          save_data = self._parse_map_property(save_data, self.VAGRANTS, self.STRUCT_PROPERTY, self.STRUCT_PROPERTY)
         self.remain = save_data
 
         self.header                 = Header(data_header)
@@ -3736,7 +3854,7 @@ class NephelymSaveEditor(Appearance):
         self.playerseenvariants     = PlayerObtainedVariants(playerseenvariants)
         self.gameflags              = GameplayTag(gameflags)
         self.worldstate             = WorldState(worldstate)
-        self.breederstatprogress    = BreederStatProgress(breederstatprogress)
+        # self.breederstatprogress    = BreederStatProgress(breederstatprogress)
         self.vagrants               = Vagrants(vagrants)
 
     def _parse_nephelyms(self, monster_and_player_data):
@@ -3937,15 +4055,15 @@ class NephelymSaveEditor(Appearance):
         bytes_out.append(self._get_array_struct_property_bytes(self.playerseenvariants.get_data(),     self.PLAYERSEENVARIANTS,     self.PLAYERSEENVARIANTS,     self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_struct_property_bytes(self.gameflags.get_data(),           self.GAMEFLAGS,           self.GAMEPLAY_TAG_CONTAINER))
         bytes_out.append(self._get_struct_property_bytes(self.worldstate.get_data(),          self.WORLDSTATE,          self.SEXY_WOLD_STATE))
-        bytes_out.append(self._get_struct_property_bytes(self.breederstatprogress.get_data(), self.BREEDERSTATPROGRESS, self.BREEDER_STAT_RANK_PROGRESS))
-        bytes_out.append(self._get_map_property_bytes(self.vagrants.get_data(), self.VAGRANTS, self.STRUCT_PROPERTY))
+        # bytes_out.append(self._get_struct_property_bytes(self.breederstatprogress.get_data(), self.BREEDERSTATPROGRESS, self.BREEDER_STAT_RANK_PROGRESS))
+        bytes_out.append(self._get_map_property_bytes(self.vagrants.get_data(), self.VAGRANTS, self.STRUCT_PROPERTY, self.STRUCT_PROPERTY))
         bytes_out.append(self.remain)
         return self.list_to_bytes(bytes_out)
 
 
 if __name__ == "__main__":
     save_in       = r'2.sav'
-    save_out      = r'0_.sav'
+    save_out      = r'0.sav'
     preset_folder = r'F:\GamePlatforms\Steam\steamapps\common\Breeders of the Nephelym Alpha\OBF\CharacterPresets'
     
     # DEBUGGING: test if parsing and save of save works.
@@ -4045,16 +4163,24 @@ if __name__ == "__main__":
         breeder_clone.remove_all_traits()
         
         # Change all stat ranks of Nephelym
-        breeder_clone.replace_all_stat_levels('S')
+        # breeder_clone.replace_all_stat_levels('S')
         
         # Change Rarity of Nephelym. A Legendary, E Common
-        breeder_clone.change_stat_level('rarity', 'A')
-        breeder_clone.change_stat_level('fertility', 'A')
-        breeder_clone.change_stat_level('strength', 'A')
-        breeder_clone.change_stat_level('allure', 'A')
-        breeder_clone.change_stat_level('willpower', 'A')
-        breeder_clone.change_stat_level('dexterity', 'A')
-        
+        # breeder_clone.change_stat_level('rarity', 'A')
+        # breeder_clone.change_stat_level('fertility', 'A')
+        # breeder_clone.change_stat_level('strength', 'A')
+        # breeder_clone.change_stat_level('allure', 'A')
+        # breeder_clone.change_stat_level('willpower', 'A')
+        # breeder_clone.change_stat_level('dexterity', 'A')
+
+        breeder_clone.stats.set_Lustrank(6)
+        breeder_clone.stats.set_Fertilityrank(6)
+        breeder_clone.stats.set_Aptituderank(6)
+        breeder_clone.stats.set_Lust(2147483647)
+        breeder_clone.stats.set_Fertility(2147483647)
+        breeder_clone.stats.set_Aptitude(2147483647)
+        breeder_clone.stats.set_Rarity(6)
+
         # Change Nephelym size
         breeder_clone.change_size('massive')
         
