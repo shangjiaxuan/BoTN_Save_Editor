@@ -510,6 +510,44 @@ class DictMacros:
         'waterfall' : b'SexScene.Position.Waterfall\x00',
     }
 
+    MILK_ITEMS = {
+        'human' : b'Item.Harvest.Milk.Human\00',
+        'foxen' : b'Item.Harvest.Milk.Foxen\x00',
+        'bovaur' : b'Item.Harvest.Milk.Bovaur\x00',
+        'demon' : b'Item.Harvest.Milk.Demon\x00',
+        'dragon' : b'Item.Harvest.Milk.Dragon\x00',
+        'formurian' : b'Item.Harvest.Milk.Formurian\x00',
+        'harpy' : b'Item.Harvest.Milk.Harpy\x00',
+        'hybrid' : b'Item.Harvest.Milk.Hybrid\x00',
+        'neko' : b'Item.Harvest.Milk.Neko\x00',
+        'risu' : b'Item.Harvest.Milk.Risu\x00',
+        'seraphim' : b'Item.Harvest.Milk.Seraphim\x00',
+        'sylvan' : b'Item.Harvest.Milk.Sylvan\x00',
+        'thriae' : b'Item.Harvest.Milk.Thriae\x00',
+        'titan' : b'Item.Harvest.Milk.Titan\x00',
+        'vulwarg' : b'Item.Harvest.Milk.Vulwarg\x00',
+        'starfallen' : b'Item.Harvest.Milk.Starfallen\x00',
+    }
+
+    SEMEN_ITEMS = {
+        'human' : b'Item.Harvest.Semen.Human\00',
+        'foxen' : b'Item.Harvest.Semen.Foxen\x00',
+        'bovaur' : b'Item.Harvest.Semen.Bovaur\x00',
+        'demon' : b'Item.Harvest.Semen.Demon\x00',
+        'dragon' : b'Item.Harvest.Semen.Dragon\x00',
+        'formurian' : b'Item.Harvest.Semen.Formurian\x00',
+        'harpy' : b'Item.Harvest.Semen.Harpy\x00',
+        'hybrid' : b'Item.Harvest.Semen.Hybrid\x00',
+        'neko' : b'Item.Harvest.Semen.Neko\x00',
+        'risu' : b'Item.Harvest.Semen.Risu\x00',
+        'seraphim' : b'Item.Harvest.Semen.Seraphim\x00',
+        'sylvan' : b'Item.Harvest.Semen.Sylvan\x00',
+        'thriae' : b'Item.Harvest.Semen.Thriae\x00',
+        'titan' : b'Item.Harvest.Semen.Titan\x00',
+        'vulwarg' : b'Item.Harvest.Semen.Vulwarg\x00',
+        'starfallen' : b'Item.Harvest.Semen.Starfallen\x00',
+    }
+
 class ByteMacros:
     '''Bytecode macros used by functions'''
     ### UE Data Structures Byte representation
@@ -536,6 +574,7 @@ class ByteMacros:
     PLAYER_UNIQUE_ID = b'\x0F\x00\x00\x00\x50\x6C\x61\x79\x65\x72\x55\x6E\x69\x71\x75\x65\x49\x44\x00'
     PLAYERWEALTH = b'\x0D\x00\x00\x00\x50\x6C\x61\x79\x65\x72\x57\x65\x61\x6C\x74\x68\x00'
     PLAYERBODYFLUIDS = b'\x11\x00\x00\x00\x50\x6C\x61\x79\x65\x72\x42\x6F\x64\x79\x46\x6C\x75\x69\x64\x73\x00'
+    PLAYERITEMS = b'\x0c\x00\x00\x00PlayerItems\x00'
     TAGNAME = b'\x08\x00\x00\x00\x54\x61\x67\x4E\x61\x6D\x65\x00'
     VERSION = b'\x08\x00\x00\x00\x56\x65\x72\x73\x69\x6F\x6E\x00'
     
@@ -1617,19 +1656,20 @@ class Header(GenericParsers):
     
     def _parse_header_data(self, header_data):
         gvas, self.playerguid,   header_data = self._parse_struct_property(header_data,       self.PLAYER_UNIQUE_ID, self.GUID_PROP)
-        _,    self.playerwealth, header_data = self._parse_array_property(header_data,        self.PLAYERWEALTH,     self.INT_PROPERTY, 4)
-        _,    playerbodyfluids,  header_data = self._parse_array_struct_property(header_data, self.PLAYERBODYFLUIDS, self.PLAYERBODYFLUIDS, self.BODYFLUIDS)
+        #_,    self.playerwealth, header_data = self._parse_array_property(header_data,        self.PLAYERWEALTH,     self.INT_PROPERTY, 4)
+        _,    playeritems,  header_data = self._parse_map_property(header_data, self.PLAYERITEMS, self.STRUCT_PROPERTY, self.INT_PROPERTY)
         self.remain = header_data
         
-        self.playerbodyfluids = PlayerBodyFluids(playerbodyfluids)
+        self.playeritems = PlayerItems(playeritems)
         self.gvas = Gvas(gvas)
     
     def get_data(self):
         bytes_out = []
         bytes_out.append(self.gvas.get_data())
         bytes_out.append(self._get_struct_property_bytes(self.playerguid,  self.PLAYER_UNIQUE_ID, self.GUID_PROP))
-        bytes_out.append(self._get_array_property_bytes(self.playerwealth, self.PLAYERWEALTH,     self.INT_PROPERTY, 4))
-        bytes_out.append(self._get_array_struct_property_bytes(self.playerbodyfluids.get_data(),  self.PLAYERBODYFLUIDS, self.PLAYERBODYFLUIDS, self.BODYFLUIDS))
+        #bytes_out.append(self._get_array_property_bytes(self.playerwealth, self.PLAYERWEALTH,     self.INT_PROPERTY, 4))
+        print(self._get_map_property_bytes(self.playeritems.get_data(),  self.PLAYERITEMS, self.STRUCT_PROPERTY, self.INT_PROPERTY))
+        bytes_out.append(self._get_map_property_bytes(self.playeritems.get_data(),  self.PLAYERITEMS, self.STRUCT_PROPERTY, self.INT_PROPERTY))
         bytes_out.append(self.remain)
         return self.list_to_bytes(bytes_out)
 
@@ -1707,43 +1747,45 @@ class Gvas(GenericParsers):
 
 
 '''Body Fluid Classes'''
-class PlayerBodyFluids(GenericParsers):
-    def __init__(self, playerbodyfluids_data):
-        self._parse_playerbodyfluids_data(playerbodyfluids_data)
+class PlayerItems(GenericParsers):
+    def __init__(self, playeritems_data):
+        self._parse_playerbodyfluids_data(playeritems_data)
     
-    def _parse_playerbodyfluids_data(self, playerbodyfluids_data):
-        self.bodyfluids = []
-        while len(playerbodyfluids_data) > 0:
-            _, racetag,    playerbodyfluids_data = self._parse_struct_property(playerbodyfluids_data, self.RACETAG, self.GAMEPLAY_TAG)
-            _, milkml,     playerbodyfluids_data = self._parse_int_property(playerbodyfluids_data, self.MILKML)
-            _, semenml,    playerbodyfluids_data = self._parse_int_property(playerbodyfluids_data, self.SEMENML)
-            _, maxmilkml,  playerbodyfluids_data = self._parse_int_property(playerbodyfluids_data, self.MAXMILKML)
-            _, maxsemenml, playerbodyfluids_data = self._parse_int_property(playerbodyfluids_data, self.MAXSEMENML)
-            playerbodyfluids_data = playerbodyfluids_data[len(self.NONE):]
-            self.bodyfluids.append(BodyFluid(racetag, milkml, semenml, maxmilkml, maxsemenml, self.NONE))
+    def _parse_playerbodyfluids_data(self, playeritems_data):
+        print(playeritems_data)
+        self.items = []
+        while len(playeritems_data) > 0:
+            _, itemtag,    playeritems_data = self._parse_name_property(playeritems_data, self.TAGNAME, True)
+            count = int.from_bytes(playeritems_data[:4])
+            playeritems_data = playeritems_data[4:]
+            self.items.append(PlayerItem(itemtag, count))
     
     def get_data(self):
-        return self.bodyfluids
+        return b'\x00\x00\x00\x00' + int.to_bytes(len(self.items),4, 'little') + self.list_to_bytes([item.get_data() for item in self.items])
+    
+    def set_item_count(self, item, count: int):
+        found = False
+        for cur_item in self.items:
+            if(cur_item.itemtag == item):
+                cur_item.count = count
+                found = True
+                break
+        if not found:
+            self.items.append(PlayerItem(item, count))
+    
+    def all_milk_and_semen(self):
+        for milk in self.MILK_ITEMS.values():
+            self.set_item_count(milk, 1000)
+        for semen in self.SEMEN_ITEMS.values():
+            self.set_item_count(semen, 1000)
 
-class BodyFluid(GenericParsers):
-    def __init__(self, racetag, milkml, semenml, maxmilkml, maxsemenml, remain):
-        _, self.racetag, _ = self._parse_name_property(racetag, self.TAGNAME, True)
-        self.milkml = milkml
-        self.semenml = semenml
-        self.maxmilkml = maxmilkml
-        self.maxsemenml = maxsemenml
-        self.remain = remain
+class PlayerItem(GenericParsers):
+    def __init__(self, itemtag, count: int):
+        self.itemtag = itemtag
+        self.count = count
     
     def get_data(self):
-        bytes_out = []
-        racetag = self._get_name_property_bytes(self.racetag, self.TAGNAME, True)
-        bytes_out.append(self._get_struct_property_bytes(racetag, self.RACETAG, self.GAMEPLAY_TAG))
-        bytes_out.append(self._get_int_property_bytes(self.milkml, self.MILKML))
-        bytes_out.append(self._get_int_property_bytes(self.semenml, self.SEMENML))
-        bytes_out.append(self._get_int_property_bytes(self.maxmilkml, self.MAXMILKML))
-        bytes_out.append(self._get_int_property_bytes(self.maxsemenml, self.MAXSEMENML))
-        bytes_out.append(self.remain)
-        return self.list_to_bytes(bytes_out)
+        return self._get_name_property_bytes(self.itemtag, self.TAGNAME, True) + int.to_bytes(self.count, 4, 'little')
 
 
 '''Base Nephelym Classes'''
@@ -1972,6 +2014,7 @@ class Nephelym(NephelymBase):
         self.add_trait('slick')
         self.add_trait('slender')
         self.add_trait('melding')
+        self.add_trait('motherly')
     
     def all_traits(self):
         for trait in self.NEPHELYM_TRAITS:
@@ -2187,6 +2230,8 @@ class Stats(GenericParsers):
         bytes_out.append(self.remain)
         return self.list_to_bytes(bytes_out)
     
+    def set_Target(self, number):
+        self.xp = int.to_bytes(number, 4, 'little')
     def set_XP(self, number):
         self.xp = int.to_bytes(number, 4, 'little')
         return
@@ -2225,6 +2270,9 @@ class Stats(GenericParsers):
         return
     def set_Rarity(self, number):
         self.rarity = int.to_bytes(number, 4, 'little')
+        return
+    def set_XP(self, number):
+        self.xp = int.to_bytes(number, 4, 'little')
         return
 
 class Prefrences(GenericParsers):
@@ -3705,12 +3753,14 @@ class BreedingTask(GenericParsers):
 class PlayerObtainedVariants(GenericParsers):
     def __init__(self, playerobtainedvariants_data):
         self._parse_playerobtainedvariants_data(playerobtainedvariants_data)
+        #print(playerobtainedvariants_data)
+        #print(self.get_data())
     
     def _parse_playerobtainedvariants_data(self, playerobtainedvariants_data):
         self.playerobtainedvariant_list = []
         while len(playerobtainedvariants_data) > 0:
             variant_values, playerobtainedvariants_data = self.split_byte_list(playerobtainedvariants_data)
-            print(variant_values)
+            # print(variant_values)
             if len(variant_values) != 2:
                 raise
             self.playerobtainedvariant_list.append(Variant(variant_values))
@@ -3722,12 +3772,20 @@ class PlayerObtainedVariants(GenericParsers):
         for race in self.RACES:
             if race in self.RACES_NPC_FEMALE or race in self.RACES_NPC_FUTA or race in self.RACES_OTHERS:
                 continue
+            race_bin = self.RACES.get(race)
+            race_bin = int.to_bytes(len(race_bin), 4) + race_bin
             if race in self.RACES_FEMALE:
-                self.playerobtainedvariant_list.append(Variant(self.RACES[race], self.SEXES['female']))
+                sex = self.SEXES.get('female')
+                sex = int.to_bytes(len(race_bin), 4) + sex
+                self.playerobtainedvariant_list.append(Variant([race_bin, sex]))
             if race in self.RACES_FUTA:
-                self.playerobtainedvariant_list.append(Variant(self.RACES[race], self.SEXES['futa']))
+                sex = self.SEXES.get('futa')
+                sex = int.to_bytes(len(race_bin), 4) + sex
+                self.playerobtainedvariant_list.append(Variant([race_bin, sex]))
             if race in self.RACES_MALE:
-                self.playerobtainedvariant_list.append(Variant(self.RACES[race], self.SEXES['male']))
+                sex = self.SEXES.get('male')
+                sex = int.to_bytes(len(race_bin), 4) + sex
+                self.playerobtainedvariant_list.append(Variant([race_bin, sex]))
         return
 
     def get_data(self):
@@ -3860,7 +3918,6 @@ class NephelymSaveEditor(Appearance):
         # _, breederstatprogress,               save_data = self._parse_struct_property(save_data, self.BREEDERSTATPROGRESS, self.BREEDER_STAT_RANK_PROGRESS)
         _, vagrants,                          save_data = self._parse_map_property(save_data, self.VAGRANTS, self.STRUCT_PROPERTY, self.STRUCT_PROPERTY)
         self.remain = save_data
-
         self.header                 = Header(data_header)
         self.nephelyms              = self._parse_nephelyms(data_monster_and_player)
         self.offspringbuffer        = self._parse_nephelyms(offspringbuffer)
@@ -4151,11 +4208,14 @@ if __name__ == "__main__":
     if True:
         # Instance of Editor
         nephelym_save_editor = NephelymSaveEditor(save_in)
-        template_sf = NephelymSaveEditor("0_clean.sav")
+        # template_sf = NephelymSaveEditor("0_clean.sav")
         
+        nephelym_save_editor.header.playeritems.all_milk_and_semen()
+
+
         # Breeder/Player is always the first Nephelym unless changed in the save header
         breeder_old = nephelym_save_editor.nephelyms[0]
-        sf_breeder = template_sf.playerspiritform
+        # sf_breeder = template_sf.playerspiritform
         # breeder = nephelym_save_editor.generate_from_preset('CP_Human_Breeder_Female_Breeder.sav', breeder_old)
         # Change the Spirit form to be breeder. Any NephelymBase derived object will work
         # nephelym_save_editor.playerspiritform.change_form(breeder)
@@ -4171,21 +4231,28 @@ if __name__ == "__main__":
         # Remove all nephelym from save editor. Includes breeder
         nephelym_save_editor.remove_all_nephelym()
 
+
         breeder_old.stats.set_Lustrank(6)
         breeder_old.stats.set_Fertilityrank(6)
         breeder_old.stats.set_Aptituderank(6)
+       # breeder_old.stats.set_Level(100)
+        breeder_old.stats.set_Lustmax(2147483647)
         breeder_old.stats.set_Lust(2147483647)
         breeder_old.stats.set_Fertility(2147483647)
         breeder_old.stats.set_Aptitude(2147483647)
+        breeder_old.stats.set_Excitement(1000000000)
         # breeder_old.stats.set_Rarity(6)
         
         # Add Nephelym to editor
         nephelym_save_editor.add_nephelym(breeder_old)
 
-        nephelym_save_editor.playerspiritform = sf_breeder
-        nephelym_save_editor.playerseenvariants = template_sf.playerseenvariants.add_all()
-        nephelym_save_editor.playerobtainedvariants = template_sf.playerobtainedvariants.add_all()
-        
+        spirit = nephelym_save_editor.generate_from_preset('CP_Hybrid_Tenko_Female_breeder_spirit.sav', breeder_old)
+        nephelym_save_editor.playerspiritform.change_form(spirit)
+        nephelym_save_editor.playerseenvariants = PlayerObtainedVariants(b'')
+        nephelym_save_editor.playerobtainedvariants = PlayerObtainedVariants(b'')
+        nephelym_save_editor.playerseenvariants.add_all()
+        nephelym_save_editor.playerobtainedvariants.add_all()
+
         # New Nephelym object instance. Needed or changes with affect all instance of exact object. New guid for clones to fix issue of not showing in game
         breeder_clone = breeder_old.clone()
         
